@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UA Generator</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:#e5e7eb;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{width:min(900px,100%);background:#111827;border:1px solid #334155;border-radius:18px;padding:24px;box-shadow:0 20px 60px #0006}
+h1{margin:0 0 6px;font-size:28px}.sub{color:#94a3b8;margin:0 0 22px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+label{font-size:13px;color:#cbd5e1;display:block;margin-bottom:6px}
+select,input,button{width:100%;border:1px solid #475569;background:#0b1220;color:#fff;border-radius:10px;padding:11px;font-size:14px}
+button{cursor:pointer;background:#2563eb;border:0;font-weight:700}button:hover{opacity:.9}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.actions button:nth-child(n+2){background:#334155}
+textarea{width:100%;height:340px;resize:vertical;border:1px solid #475569;background:#020617;color:#dbeafe;border-radius:12px;padding:14px;font:13px/1.55 monospace}
+.count{font-size:13px;color:#94a3b8;margin:8px 0}
+@media(max-width:650px){.row,.actions{grid-template-columns:1fr}.card{padding:18px}}
+</style>
+
+<style>
+#loginScreen{position:fixed;inset:0;background:#020617;display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
+.loginBox{width:min(380px,100%);background:#111827;border:1px solid #334155;border-radius:18px;padding:28px;box-shadow:0 20px 60px #0008;text-align:center}
+.loginBox h2{margin:0 0 8px}.loginBox p{color:#94a3b8;font-size:14px;margin:0 0 20px}
+.loginBox input{width:100%;padding:12px;border:1px solid #475569;border-radius:10px;background:#0b1220;color:#fff;margin-bottom:10px}
+.loginBox button{width:100%;padding:12px;border:0;border-radius:10px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}
+#loginError{color:#f87171;font-size:13px;min-height:18px;margin-top:10px}
+body.locked{overflow:hidden}
+</style>
+</head>
+<body>
+<div id="loginScreen">
+  <div class="loginBox">
+    <h2>🔐 Private Access</h2>
+    <p>Enter the password to use User-Agent Generator.</p>
+    <input id="sitePassword" type="password" placeholder="Password" autocomplete="off"
+           onkeydown="if(event.key==='Enter') unlockSite()">
+    <button onclick="unlockSite()">Enter</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<main class="card">
+<h1>⚡ User-Agent Generator</h1>
+<p class="sub">Generate random browser/device User-Agent strings for testing.</p>
+
+<div class="row">
+<div><label>Platform</label><select id="platform">
+<option value="all">All</option><option value="windows">Windows</option>
+<option value="android">Android</option><option value="iphone">iPhone</option>
+<option value="mac">macOS</option>
+</select></div>
+<div><label>Browser</label><select id="browser">
+<option value="all">All</option><option value="chrome">Chrome</option>
+<option value="firefox">Firefox</option><option value="edge">Edge</option>
+<option value="safari">Safari</option>
+</select></div>
+<div><label>Quantity</label><input id="qty" type="number" min="1" max="10000" value="20"></div>
+</div>
+
+<div class="actions">
+<button onclick="generate()">Generate</button>
+<button onclick="copyAll()">Copy All</button>
+<button onclick="downloadTxt()">Download TXT</button>
+<button onclick="clearAll()">Clear</button>
+</div>
+
+<div class="count" id="count">0 User-Agents</div>
+<textarea id="out" spellcheck="false" placeholder="Generated User-Agent strings will appear here..."></textarea>
+</main>
+
+<script>
+const win=['10.0','10.0','6.1'];
+const chromeVers=['120.0.0.0','121.0.6167.85','122.0.6261.69','123.0.6312.86','124.0.6367.91','125.0.6422.76','126.0.6478.61','127.0.6533.88'];
+const firefoxVers=['121.0','122.0','123.0','124.0','125.0','126.0','127.0'];
+const edgeVers=['120.0.2210.91','121.0.2277.83','122.0.2365.92','123.0.2420.81','124.0.2478.80','125.0.2535.67','126.0.2592.81'];
+const androids=['10','11','12','13','14','15','16'];
+const devices=['Pixel 7','Pixel 8','Pixel 8 Pro','SM-S918B','SM-S928B','SM-A546E','2201116SG','2312DRA50G'];
+
+function r(a){return a[Math.floor(Math.random()*a.length)]}
+function browserUA(b,p){
+  let platform;
+  if(p==='windows') platform=`Windows NT ${r(['10.0','6.1'])}; Win64; x64`;
+  else if(p==='android') platform=`Linux; Android ${r(androids)}; ${r(devices)}`;
+  else if(p==='iphone') platform=`iPhone; CPU iPhone OS ${r(['16_6','17_0','17_5','18_0'])} like Mac OS X`;
+  else platform=`Macintosh; Intel Mac OS X ${r(['10_15_7','11_7_10','12_6_8','13_6_6','14_5'])}`;
+
+  if(b==='safari' || (p==='iphone' && b==='all'))
+    return `Mozilla/5.0 (${platform}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${r(['16.0','17.0','17.5','18.0'])} Mobile/15E148 Safari/604.1`;
+  if(b==='firefox')
+    return `Mozilla/5.0 (${platform}; rv:${r(firefoxVers)}) Gecko/20100101 Firefox/${r(firefoxVers)}`;
+  if(b==='edge')
+    return `Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${r(chromeVers)} Safari/537.36 Edg/${r(edgeVers)}`;
+  return `Mozilla/5.0 (${platform}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${r(chromeVers)} Safari/537.36`;
+}
+function generate(){
+  const p=document.getElementById('platform').value,b=document.getElementById('browser').value;
+  let q=Math.min(10000,Math.max(1,parseInt(document.getElementById('qty').value)||1));
+  let list=[];
+  for(let i=0;i<q;i++){
+    let pp=p==='all'?r(['windows','android','iphone','mac']):p;
+    let bb=b==='all'?r(pp==='iphone'?['safari','chrome']:['chrome','firefox','edge','safari']):b;
+    list.push(browserUA(bb,pp));
+  }
+  document.getElementById('out').value=list.join('\\n');
+  document.getElementById('count').textContent=`${list.length} User-Agent${list.length===1?'':'s'}`;
+}
+async function copyAll(){
+  const x=document.getElementById('out').value;if(!x)return;
+  await navigator.clipboard.writeText(x);
+  document.getElementById('count').textContent='Copied ✓';
+}
+function downloadTxt(){
+  const x=document.getElementById('out').value;if(!x)return;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([x],{type:'text/plain'}));
+  a.download='user-agents.txt';a.click();URL.revokeObjectURL(a.href);
+}
+function clearAll(){document.getElementById('out').value='';document.getElementById('count').textContent='0 User-Agents'}
+generate();
+</script>
+
+<script>
+document.body.classList.add('locked');
+function unlockSite(){
+  const password=document.getElementById('sitePassword').value;
+  if(password==='Ashik7042'){
+    document.getElementById('loginScreen').style.display='none';
+    document.body.classList.remove('locked');
+    sessionStorage.setItem('ua_generator_auth','1');
+  }else{
+    document.getElementById('loginError').textContent='Incorrect password.';
+    document.getElementById('sitePassword').value='';
+    document.getElementById('sitePassword').focus();
+  }
+}
+if(sessionStorage.getItem('ua_generator_auth')==='1'){
+  window.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('loginScreen').style.display='none';
+    document.body.classList.remove('locked');
+  });
+}
+</script>
+</body>
+</html>
